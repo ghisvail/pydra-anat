@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pydra-anat"
+dynamic = ["version"]
+description = "Anatomical processing workflow in Pydra"
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MPL-2.0"
+keywords = [
+  "bias-field-correction",
+  "brain-template",
+  "image-registration",
+  "neuroimaging",
+  "pydra",
+  "workflow",
+]
+authors = [
+  { name = "Ghislain Vaillant", email = "ghislain.vaillant@icm-institute.org" },
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+  "pydra>=0.22",
+  "pydra-fsl==0.0.19",
+  "typer>=0.9.0",
+]
+
+[project.urls]
+Documentation = "https://github.com/ghisvail/pydra-anat#readme"
+Issues = "https://github.com/ghisvail/pydra-anat/issues"
+Source = "https://github.com/ghisvail/pydra-anat"
+
+[project.scripts]
+pydra-anat = "pydra_anat.cli:app"
+
+[tool.hatch.version]
+path = "src/pydra_anat/__about__.py"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src/pydra_anat"]
+sources = ["src"]
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = [
+  "black",
+  "isort",
+  "tomli",
+]
+
+[tool.hatch.envs.lint.scripts]
+all = [
+  "black --check --diff {args:src}",
+  "isort --check --diff {args:src}",
+]
+fix = [
+  "black --quiet {args:src}",
+  "isort --quiet {args:src}",
+]
+
+[tool.black]
+target-version = ["py37"]
+line-length = 120
+
+[tool.isort]
+profile = "black"
