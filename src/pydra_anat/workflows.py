@@ -4,8 +4,9 @@ from pydra.engine.submitter import Submitter
 
 def pydra_anat(**kwargs) -> Workflow:
     from pydra.tasks import fsl
+    from . import tasks
 
-    workflow = Workflow(input_spec=["input_image", "input_mask", "template_image"], **kwargs)
+    workflow = Workflow(input_spec=["input_image", "input_mask", "template_image", "template_mask"], **kwargs)
 
     workflow.add(
         fsl.FSLReorient2Std(
@@ -51,15 +52,31 @@ def pydra_anat(**kwargs) -> Workflow:
     )
 
     workflow.add(
+        tasks.Binarize(
+            name="invert_mask",
+            input_image=workflow.resample_mask_to_roi.lzout.output_image,
+            inverse=True,
+        )
+    )
+
+    workflow.add(
         fsl.FLIRT(
             name="register_image",
             input_image=workflow.crop_image.lzout.output_image,
             reference_image=workflow.lzin.template_image,
-            # input_weights=workflow.resample_mask_to_roi.lzout.output_image,
+            input_weights=workflow.invert_mask.lzout.output_image,
             interpolation="spline",
             search_range_x=[-15, 15],
             search_range_y=[-15, 15],
             search_range_z=[-15, 15],
+        )
+    )
+
+    workflow.add(
+        tasks.Mask(
+            name="apply_template_mask",
+            input_image=workflow.register_image.lzout.output_image,
+            mask_image=workflow.lzin.template_mask,
         )
     )
 
@@ -69,13 +86,20 @@ def pydra_anat(**kwargs) -> Workflow:
             input_image=workflow.resample_mask_to_roi.lzout.output_image,
             reference_image=workflow.lzin.template_image,
             initial_matrix=workflow.register_image.lzout.output_matrix,
-            interpolation="nearestneighbour",
+        )
+    )
+
+    workflow.add(
+        tasks.Binarize(
+            name="binarize_mask",
+            input_image=workflow.resample_mask_to_tpl.lzout.output_image,
+            threshold=0.9,
         )
     )
 
     workflow.set_output({
-        "output_image": workflow.register_image.lzout.output_image,
-        "output_mask": workflow.resample_mask_to_tpl.lzout.output_image,
+        "output_image": workflow.apply_template_mask.lzout.output_image,
+        "output_mask": workflow.binarize_mask.lzout.output_image,
     })
 
     return workflow

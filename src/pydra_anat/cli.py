@@ -18,16 +18,16 @@ def version_callback(value: bool):
 @app.command()
 def main(
     input_image: Annotated[Path, typer.Argument(file_okay=True, resolve_path=True)],
-    # output_dir: Annotated[Path, typer.Argument(dir_okay=True, resolve_path=True)],
+    output_dir: Annotated[Path, typer.Argument(dir_okay=True, resolve_path=True)],
     input_mask: Annotated[
         Optional[Path], typer.Option("--input-mask", file_okay=True, resolve_path=True)
     ] = None,
     template_image: Annotated[
         Optional[Path], typer.Option("--template-image", file_okay=True, resolve_path=True)
     ] = None,
-    # template_mask: Annotated[
-    #     Optional[Path], typer.Option("--template-mask", file_okay=True, resolve_path=True)
-    # ] = None,
+    template_mask: Annotated[
+        Optional[Path], typer.Option("--template-mask", file_okay=True, resolve_path=True)
+    ] = None,
     cache_dir: Annotated[
         Optional[Path], typer.Option("--cache-dir", dir_okay=True, resolve_path=True)
     ] = None,
@@ -39,6 +39,7 @@ def main(
     workflow.inputs.input_image = input_image
     workflow.inputs.input_mask = input_mask
     workflow.inputs.template_image = template_image
+    workflow.inputs.template_mask = template_mask
 
     result = run(workflow)
     typer.echo(result)
